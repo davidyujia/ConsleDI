@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -42,6 +43,15 @@ namespace ConsoleTest
         }
     }
 
+    public static class Extensions
+    {
+        public static IDisposable CreateLoggerScope(this Microsoft.Extensions.Logging.ILogger logger, params string[] ids)
+        {
+            var idList = new List<string>(ids);
+
+            return logger.BeginScope(new[] { new KeyValuePair<string, object>("ScopeId", string.Join("_", idList)) });
+        }
+    }
 
     /// <summary>
     /// Console 用 DI
@@ -50,7 +60,7 @@ namespace ConsoleTest
     {
         private readonly IServiceCollection _services;
         private Lazy<IServiceProvider> Provider => new Lazy<IServiceProvider>(() => _services.BuildServiceProvider());
-        
+
         private static readonly Lazy<string> BasePath = new Lazy<string>(() =>
         {
             using var processModule = Process.GetCurrentProcess().MainModule;
